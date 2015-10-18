@@ -38,4 +38,18 @@ public class Others {
         }
         return false;
     }
+    // 检查扩展名，得到图片格式的文件
+    public boolean checkIsImageFile(String fName) {
+        boolean isImageFile = false;
+
+        // 获取扩展名
+        String FileEnd = fName.substring(fName.lastIndexOf(".") + 1,
+                fName.length()).toLowerCase();
+        isImageFile = FileEnd.equals("jpg") || FileEnd.equals("gif")
+                || FileEnd.equals("png") || FileEnd.equals("jpeg")
+                || FileEnd.equals("bmp");
+
+        return isImageFile;
+
+    }
 }
