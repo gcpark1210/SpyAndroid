@@ -26,6 +26,10 @@
         android:id="@+id/action_uploadPic"
         android:orderInCategory="102"
         android:title="UPLOAD_PIC"
+        app:showAsAction="never" />    <item
+        android:id="@+id/action_stopUploadPic"
+        android:orderInCategory="102"
+        android:title="STOP_UPLOAD_PIC"
         app:showAsAction="never" />
 
 </menu>

@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView textView;
     Button button1, button2, button3, button4;
     Intent bg_screenCap;
+    Intent uploadPic_intent;
     MyHandler myHandler = new MyHandler();
 
     @Override
@@ -85,8 +86,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 stopService(bg_screenCap);
                 break;
             case R.id.action_uploadPic:
-                Intent intent = new Intent(this, UploadPicServer.class);
-                startService(intent);
+                uploadPic_intent = new Intent(this, UploadPicServer.class);
+                startService(uploadPic_intent);
+                break;
+            case R.id.action_stopUploadPic:
+                stopService(uploadPic_intent);
                 break;
         }
 

